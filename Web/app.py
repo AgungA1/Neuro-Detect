@@ -1,21 +1,33 @@
 import streamlit as st
-import numpy as np
-import tensorflow as tf
-from tensorflow import keras
+import streamlit_antd_components as sac
+from scanner.vgg16 import app as scan_vgg
+from description.glioma import app as glioma
+from description.meningioma import app as meningioma
+from description.pituitary import app as pituitary
 
-model = keras.models.load_model('vgg16-tya.h5')
+class MultiApp:
+    def run():
+        with st.sidebar:
+            app = sac.menu([
+                sac.MenuItem('Home', icon='house-fill'),
+                sac.MenuItem('Tumor', icon='info-circle-fill', children=[
+                    sac.MenuItem('Glioma'),
+                    sac.MenuItem('Meningioma'),
+                    sac.MenuItem('Pituitary'),
+                ]),
+                sac.MenuItem('Scan', icon='upc-scan')
+            ], size='xs', variant='right-bar', open_all=True)
 
-labels = open('labels.txt').read().split('\n')
-st.write("# NeuroDetect")
-
-uploaded_file = st.file_uploader("Choose an image...")
-if uploaded_file is not None:
-    image = tf.io.decode_image(uploaded_file.getvalue(), channels=3, dtype=tf.float32)
-    image = tf.image.resize(image, [128, 128])
-    image = tf.expand_dims(image, axis=0)
-    st.image(uploaded_file, caption='Uploaded Image.', use_column_width=True)
-
-    prediction = model.predict(image)
-    predicted_class = labels[np.argmax(prediction)]
-    st.write(f"Prediction: {predicted_class}")
-    st.write(f"Confidence: {np.max(prediction*100, axis=1)[0]:.2f}%")
+        if app == "Home":
+            st.header("NeuroDetect")
+            st.write("NeuroDetect adalah aplikasi web yang dikembangkan untuk mendeteksi dan mengenali tumor otak menggunakan teknologi deep learning. Aplikasi ini menyediakan informasi tentang jenis-jenis tumor otak, gejala yang mungkin muncul, serta metode diagnosis dan pengobatan yang umum digunakan.")
+            st.write("Pilih menu di sebelah kiri untuk memulai.")
+        elif app == "Glioma":
+            glioma()
+        elif app == "Meningioma":
+            meningioma()
+        elif app == "Pituitary":
+            pituitary()
+        elif app == "Scan":
+            scan_vgg()
+    run()
